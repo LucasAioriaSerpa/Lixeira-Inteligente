@@ -1,5 +1,5 @@
 
-#define MQ2pin 8 // porta 8 no arduino
+#define MQ2pin 5 // porta 5 no ESP32
 
 int sensorValue;  // variável que vai guardar o valor do sensor
 
