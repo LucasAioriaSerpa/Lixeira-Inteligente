@@ -1,1 +1,9 @@
-{}
+{
+    "files.associations": {
+        "*.sqlbook": "sql",
+        "*.ndjson": "jsonl",
+        "*.dbclient-js": "javascript",
+        "*.embeddedhtml": "html",
+        "string": "cpp"
+    }
+}

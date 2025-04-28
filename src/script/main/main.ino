@@ -2,11 +2,13 @@
 #include <Arduino.h>
 #include <stdio.h>
 
-void setup() {
-    Serial.begin(9600);
-    Serial.println("Hello, World!");
+void setup()
+{
+  Serial.begin(9600);
+  Serial.println("Hello, World!");
 }
 
-void loop() {
-    // Main loop code here
+void loop()
+{
+  // Main loop code here
 }
