@@ -1,9 +1,10 @@
 
+#include <Arduino.h>
 #include <stdio.h>
 
 void setup() {
-    // Initialize hardware components here
-    printf("Setup complete.\n");
+    Serial.begin(9600);
+    Serial.println("Hello, World!");
 }
 
 void loop() {
