@@ -4,6 +4,8 @@
 #define PIN_TRIG 0
 #define PIN_ECHO 2
 
+double altura = 44; // ? altura maxima
+
 void setup()
 {
     Serial.begin(115200);
@@ -21,8 +23,6 @@ void loop()
     ! Levando em consideração que a lixeira !
     ! tem 37cm de largura e 44cm de altura !
     */
-
-    double altura = 44; // ? altura maxima
 
     // * pega o valor do Pulso e transforma em CM
     double duration = (pulseIn(PIN_ECHO, HIGH) / 58);
