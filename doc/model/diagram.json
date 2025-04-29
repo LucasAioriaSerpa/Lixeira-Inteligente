@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "author": "Garudaakuma Aioria",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -28.8, "left": -71.96, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic1", "top": -113.7, "left": 149.5, "attrs": {} },
+    { "type": "wokwi-gas-sensor", "id": "gas1", "top": -6.9, "left": -271.4, "attrs": {} },
+    {
+      "type": "wokwi-hx711",
+      "id": "cell1",
+      "top": 242.6,
+      "left": -199,
+      "attrs": { "type": "5kg" }
+    },
+    { "type": "wokwi-servo", "id": "servo1", "top": -251.6, "left": 153.6, "attrs": {} },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": -160.8,
+      "left": -247.8,
+      "attrs": { "volume": "0.1" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -138,
+      "left": -82.6,
+      "attrs": { "color": "limegreen" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -138,
+      "left": -34.6,
+      "attrs": { "color": "yellow", "flip": "" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": -138,
+      "left": 13.4,
+      "attrs": { "color": "red", "flip": "" }
+    },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": 90.4, "left": 88.62, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "cell1:VCC", "esp:5V", "red", [ "h-48", "v-96", "h172.8", "v-28.8" ] ],
+    [ "cell1:SCK", "esp:D0", "gold", [ "h-38.4", "v-68", "h268.8", "v-57.6" ] ],
+    [ "cell1:DT", "esp:D1", "orange", [ "h-28.8", "v-48.5", "h268.8", "v-76.8" ] ],
+    [ "gas1:VCC", "esp:5V", "red", [ "h38.4", "v133.5" ] ],
+    [ "gas1:GND", "esp:GND.1", "black", [ "h48", "v95.2" ] ],
+    [ "cell1:GND", "esp:GND.1", "black", [ "h-19.2", "v-57.9", "h124.8", "v-86.4" ] ],
+    [ "pir1:VCC", "esp:5V", "red", [ "v28.8", "h-192", "v-28.8" ] ],
+    [ "pir1:OUT", "esp:2", "blue", [ "v38.4", "h-57.74", "v-76.8" ] ],
+    [ "gas1:AOUT", "esp:VP", "magenta", [ "h57.6", "v9.6" ] ],
+    [ "gas1:DOUT", "esp:34", "yellow", [ "v-0.3", "h57.6", "v19.2" ] ],
+    [ "ultrasonic1:VCC", "esp:5V", "red", [ "v259.2", "h-192", "v-28.8", "h-96.15" ] ],
+    [ "ultrasonic1:TRIG", "esp:4", "gold", [ "v86.4", "h-192.4", "v48" ] ],
+    [ "ultrasonic1:ECHO", "esp:0", "orange", [ "v96", "h-192.8", "v48" ] ],
+    [ "servo1:GND", "esp:GND.2", "black", [ "h-28.8", "v201.6", "h-96" ] ],
+    [ "bz1:1", "esp:GND.1", "black", [ "v48", "h-67.2", "v153.6" ] ],
+    [ "bz1:2", "esp:35", "purple", [ "v57.6", "h-67.6", "v86.4", "h172.8", "v-19.2" ] ],
+    [
+      "servo1:V+",
+      "esp:5V",
+      "red",
+      [ "h-19.2", "v67.3", "h201.6", "v374.4", "h-307.2", "v-57.6", "h-96.15" ]
+    ],
+    [ "led1:C", "esp:GND.2", "black", [ "v57.6", "h96.4" ] ],
+    [ "led2:C", "esp:GND.2", "black", [ "v48", "h48.4", "v48" ] ],
+    [ "led3:C", "esp:GND.2", "black", [ "v57.6", "h0.4" ] ],
+    [ "led1:A", "esp:23", "limegreen", [ "v38.4", "h96", "v67.2" ] ],
+    [ "led2:A", "esp:22", "yellow", [ "v28.8", "h57.6", "v86.4" ] ],
+    [ "led3:A", "esp:21", "red", [ "v19.2", "h19.2", "v124.8" ] ],
+    [ "pir1:GND", "esp:GND.3", "black", [ "v48", "h-77.06", "v-163.2" ] ],
+    [ "ultrasonic1:GND", "esp:GND.3", "black", [ "v105.6", "h-68.4", "v-28.8" ] ]
+  ],
+  "dependencies": {}
+}
