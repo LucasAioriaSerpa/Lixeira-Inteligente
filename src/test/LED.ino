@@ -1,9 +1,10 @@
 
+#include <Arduino.h>
 #include <string>
 
-#define GREEN_LED 0
-#define YELLOW_LED 4
-#define RED_LED 16
+const int GREEN_LED = 0;
+const int YELLOW_LED = 4;
+const int RED_LED = 16;
 
 void setup()
 {

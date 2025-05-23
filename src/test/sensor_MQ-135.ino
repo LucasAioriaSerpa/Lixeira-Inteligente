@@ -1,4 +1,6 @@
 
+#include <Arduino.h>
+
 #define MQ2pin 5 // porta 5 no ESP32
 
 int sensorValue; // variável que vai guardar o valor do sensor
@@ -12,8 +14,8 @@ void setup()
 
 void loop()
 {
-  sensorValue = digitalRead(MQ2pin); // lê a porta 8
-                                     // MQ2pin → Retorna 1 se não houver gás detectado | Retorna 0 se houver gás
+  sensorValue = digitalRead(MQ2pin); // ? lê a porta 8
+                                     // ? MQ2pin → Retorna 1 se não houver gás detectado | Retorna 0 se houver gás
 
   Serial.print("Digital Output: ");
   Serial.print(sensorValue);

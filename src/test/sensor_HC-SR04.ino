@@ -1,35 +1,43 @@
 
 #include <Arduino.h>
 
-#define PIN_TRIG 0
-#define PIN_ECHO 2
+const int maxRange = 30;
+const int minRange = 5;
 
-double altura = 44; // ? altura maxima
+const int TRIG = 13;
+const int ECHO = 12;
 
-void setup()
-{
-  Serial.begin(115200);
-  pinMode(PIN_TRIG, OUTPUT);
-  pinMode(PIN_ECHO, INPUT);
+void setup() {
+  Serial.begin(9600);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
 }
 
-void loop()
-{
-  digitalWrite(PIN_TRIG, HIGH);
+void loop() {
+
+  long duration, inches, cm;
+
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
-  digitalWrite(PIN_TRIG, LOW);
+  digitalWrite(TRIG, LOW);
 
-  /*
-  ! Levando em consideração que a lixeira !
-  ! tem 37cm de largura e 44cm de altura !
-  */
+  duration = pulseIn(ECHO, HIGH);
 
-  // * pega o valor do Pulso e transforma em CM
-  double duration = (pulseIn(PIN_ECHO, HIGH) / 58);
-  double porcentagemDoRecheio = (1 - (duration / altura)) * 100;
-  Serial.print("Porcentagem do recheio: ");
-  Serial.print(porcentagemDoRecheio);
-  Serial.println("%");
+  inches = microSecondsToInches(duration);
+  cm = microSecondsToCentimeters(duration);
 
-  delay(1000);
+  Serial.print(inches);
+  Serial.print("in, ");
+  Serial.print(cm);
+  Serial.print("cm");
+  Serial.println();
+
+  delay(100);
+
 }
+
+long microSecondsToInches(long microSeconds) { return microSeconds / 74 / 2; }
+
+long microSecondsToCentimeters(long microSeconds) { return microSeconds / 29 / 2; }
