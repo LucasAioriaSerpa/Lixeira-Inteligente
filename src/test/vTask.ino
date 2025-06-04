@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <stdio.h>
-// #include <Arduino_FreeRTOS.h> // REMOVE: Not needed for ESP32, FreeRTOS is built-in
+
+#define RED_PIN 12
+#define YELLOW_PIN 14
+#define GREEN_PIN 27
 
 // Task handles (optional)
 TaskHandle_t Task1Handle = NULL;
@@ -10,21 +13,43 @@ TaskHandle_t Task2Handle = NULL;
 void Task1(void *pvParameters) {
   for (;;) {
     Serial.println("Task 1 running");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    digitalWrite(YELLOW_PIN, HIGH);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    digitalWrite(YELLOW_PIN, LOW);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
 
 void Task2(void *pvParameters) {
   for (;;) {
     Serial.println("Task 2 running");
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    digitalWrite(RED_PIN, HIGH);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    digitalWrite(RED_PIN, LOW);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
   }
 }
 
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("Hello, World!");
+  // config LEDS
+  Serial.println("LED-TESTING");
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(YELLOW_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  digitalWrite(RED_PIN, HIGH);
+  delay(100);
+  digitalWrite(RED_PIN, LOW);
+  delay(100);
+  digitalWrite(YELLOW_PIN, HIGH);
+  delay(100);
+  digitalWrite(YELLOW_PIN, LOW);
+  delay(100);
+  digitalWrite(GREEN_PIN, HIGH);
+  delay(100);
+  digitalWrite(GREEN_PIN, LOW);
+  delay(100);
 
   // Create tasks
   xTaskCreate(
