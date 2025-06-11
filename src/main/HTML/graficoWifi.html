@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Monitoramento Ultrassônico ESP32</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+            text-align: center;
+        }
+
+        #status {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        #chart-container {
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Gráfico de Distância dos Sensores</h2>
+    <div id="status">Conectando...</div>
+    <div id="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <script>
+        const ip = "http://192.168.43.42/"; // IP real do ESP32
+        const MAX_POINTS = 30;
+        const statusEl = document.getElementById("status");
+
+        const ctx = document.getElementById("chart").getContext("2d");
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Sensor 1 (cm)',
+                        borderColor: 'red',
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        data: [],
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Sensor 2 (cm)',
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                        data: [],
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                animation: {
+                    duration: 500,
+                    easing: 'easeOutQuad'
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Tempo' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 100,
+                        title: { display: true, text: 'Distância (cm)' }
+                    }
+                }
+            }
+        });
+
+        async function fetchData() {
+            try {
+                const response = await fetch(ip, { mode: "cors" });
+                const data = await response.json();
+                const now = new Date().toLocaleTimeString();
+
+                if (chart.data.labels.length >= MAX_POINTS) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                    chart.data.datasets[1].data.shift();
+                }
+
+                chart.data.labels.push(now);
+                chart.data.datasets[0].data.push(data.sensor1);
+                chart.data.datasets[1].data.push(data.sensor2);
+                chart.update();
+
+                statusEl.textContent = `Conectado - Última atualização: ${now}`;
+                statusEl.style.color = "green";
+            } catch (error) {
+                console.error("Erro ao buscar dados:", error);
+                statusEl.textContent = "Erro de conexão com ESP32";
+                statusEl.style.color = "red";
+            }
+        }
+
+        setInterval(fetchData, 1000);
+    </script>
+</body>
+
+</html>

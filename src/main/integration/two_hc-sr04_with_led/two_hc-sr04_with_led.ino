@@ -1,109 +1,109 @@
+// ! NÃO UTILIZAR PINO 35 E 34
 
-const int maxRange = 30;
-const int minRange = 5;
+#include <Arduino.h>
 
-const int TRIG = 33;
-const int ECHO = 32;
+constexpr int maxRange = 30;
+constexpr int minRange = 5;
+constexpr int trigDelay = 10;
+constexpr int numSamples = 5;
 
-const int red = 12;
-const int yellow = 14;
-const int green = 27;
+const int TRIG_1 = 33;
+const int ECHO_1 = 32;
+const int RED_1 = 12;
+const int YELLOW_1 = 14;
+const int GREEN_1 = 27;
 
-const int TRIG_2 = 35;
-const int ECHO_2 = 34;
+const int TRIG_2 = 25;
+const int ECHO_2 = 13;
+const int RED_2 = 26;
+const int GREEN_2 = 35;
 
-const int red_2 = 26;
-const int green_2 = 25;
+long microSecondsToCentimeters(long microSeconds)
+{
+    return microSeconds / 29 / 2;
+}
+
+long singleReadCM(int trigPin, int echoPin)
+{
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(trigDelay);
+    digitalWrite(trigPin, LOW);
+    long duration = pulseIn(echoPin, HIGH, 30000); // ? timeout de 30ms
+    return microSecondsToCentimeters(duration);
+}
+
+long readDistanceAvgCM(int trigPin, int echoPin)
+{
+    long sum = 0;
+    int validReads = 0;
+    for (int i = 0; i < numSamples; i++)
+    {
+        long d = singleReadCM(trigPin, echoPin);
+        if (d > 0 && d < 400)
+        {
+            sum += d;
+            validReads++;
+        }
+        delay(2);
+    }
+    return (validReads > 0) ? sum / validReads : 0;
+}
 
 void setup()
 {
     Serial.begin(9600);
-    pinMode(TRIG, OUTPUT);
-    pinMode(ECHO, INPUT);
-
-    pinMode(red, OUTPUT);
-    pinMode(yellow, OUTPUT);
-    pinMode(green, OUTPUT);
+    pinMode(TRIG_1, OUTPUT);
+    pinMode(ECHO_1, INPUT);
+    pinMode(RED_1, OUTPUT);
+    pinMode(YELLOW_1, OUTPUT);
+    pinMode(GREEN_1, OUTPUT);
 
     pinMode(TRIG_2, OUTPUT);
     pinMode(ECHO_2, INPUT);
-
-    pinMode(red_2, OUTPUT);
-    pinMode(green_2, OUTPUT);
+    pinMode(RED_2, OUTPUT);
+    pinMode(GREEN_2, OUTPUT);
 }
 
 void loop()
 {
-    // Sensor 1
-    long duration1, inches1, cm1;
+    long cm1 = readDistanceAvgCM(TRIG_1, ECHO_1);
+    delay(10); // ? evitar interferência entre os sensores
+    long cm2 = readDistanceAvgCM(TRIG_2, ECHO_2);
 
-    digitalWrite(TRIG, LOW);
-    delayMicroseconds(2);
-    digitalWrite(TRIG, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIG, LOW);
+    Serial.println("Sensor 1: " + String(cm1) + " cm | Sensor 2: " + String(cm2) + " cm");
 
-    duration1 = pulseIn(ECHO, HIGH);
-
-    inches1 = microSecondsToInches(duration1);
-    cm1 = microSecondsToCentimeters(duration1);
-
-    Serial.print("Sensor 1: ");
-    Serial.print(inches1);
-    Serial.print("in, ");
-    Serial.print(cm1);
-    Serial.print("cm | ");
-
+    // ? LED lógicos do Sensor 1
     if (cm1 >= maxRange)
     {
-        digitalWrite(red, LOW);
-        digitalWrite(yellow, LOW);
-        digitalWrite(green, HIGH);
+        digitalWrite(RED_1, LOW);
+        digitalWrite(YELLOW_1, LOW);
+        digitalWrite(GREEN_1, HIGH);
     }
-    else if (cm1 < maxRange && cm1 >= minRange)
+    else if (cm1 >= minRange)
     {
-        digitalWrite(red, LOW);
-        digitalWrite(green, LOW);
-        digitalWrite(yellow, HIGH);
+        digitalWrite(RED_1, LOW);
+        digitalWrite(GREEN_1, LOW);
+        digitalWrite(YELLOW_1, HIGH);
     }
     else
     {
-        digitalWrite(yellow, LOW);
-        digitalWrite(green, LOW);
-        digitalWrite(red, HIGH);
+        digitalWrite(YELLOW_1, LOW);
+        digitalWrite(GREEN_1, LOW);
+        digitalWrite(RED_1, HIGH);
     }
-
-    // Sensor 2
-    long duration2, inches2, cm2;
-
-    digitalWrite(TRIG_2, LOW);
-    delayMicroseconds(2);
-    digitalWrite(TRIG_2, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIG_2, LOW);
-
-    duration2 = pulseIn(ECHO_2, HIGH);
-
-    inches2 = microSecondsToInches(duration2);
-    cm2 = microSecondsToCentimeters(duration2);
-
-    Serial.print("Sensor 2: ");
-    Serial.print(inches2);
-    Serial.print("in, ");
-    Serial.print(cm2);
-    Serial.println("cm");
-
-    // Acende green_2 se detectar objeto, senão acende red_2
+    // ? LED lógicos do Sensor 2
     if (cm2 < maxRange && cm2 > 0)
     {
-        digitalWrite(red_2, LOW);
-        digitalWrite(green_2, HIGH);
+        digitalWrite(RED_2, LOW);
+        digitalWrite(GREEN_2, HIGH);
     }
     else
     {
-        digitalWrite(green_2, LOW);
-        digitalWrite(red_2, HIGH);
+        digitalWrite(GREEN_2, LOW);
+        digitalWrite(RED_2, HIGH);
     }
 
-    delay(100);
+    delay(5);
 }

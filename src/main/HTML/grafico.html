@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gráfico dos Sensores</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 100%;
+        }
+
+        body {
+            font-family: Arial;
+            text-align: center;
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Leitura dos Sensores Ultrassônicos</h2>
+    <button onclick="connectSerial()">Conectar ao Arduino</button>
+    <canvas id="sensorChart"></canvas>
+    <script>
+        let chart;
+        const labels = [];
+        const data1 = [];
+        const data2 = [];
+        const ctx = document.getElementById('sensorChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Sensor 1 (cm)', data: data1, borderColor: 'red', fill: false },
+                    { label: 'Sensor 2 (cm)', data: data2, borderColor: 'green', fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                animation: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+        async function connectSerial() {
+            try {
+                const port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 9600 });
+                const decoder = new TextDecoderStream();
+                const inputDone = port.readable.pipeTo(decoder.writable);
+                const inputStream = decoder.readable;
+                const reader = inputStream.getReader();
+                let buffer = '';
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    if (value) {
+                        buffer += value;
+                        let lines = buffer.split('\n');
+                        for (let i = 0; i < lines.length - 1; i++) {
+                        parseData(lines[i].trim());
+                        }
+                        buffer = lines[lines.length - 1];
+                    }
+                }
+            } catch (err) {
+                console.error("Erro ao conectar à porta serial:", err);
+                alert("Erro ao conectar. Verifique se o Arduino está conectado e a porta está livre.");
+            }
+        }
+        function parseData(line) {
+            // * Esperado: Sensor 1: 23 cm | Sensor 2: 42 cm
+            console.log("Recebido:", line);
+            const match = line.match(/Sensor 1: (\d+) cm \| Sensor 2: (\d+) cm/);
+            if (match) {
+                const cm1 = parseInt(match[1]);
+                const cm2 = parseInt(match[2]);
+                const timestamp = new Date().toLocaleTimeString();
+                labels.push(timestamp);
+                data1.push(cm1);
+                data2.push(cm2);
+                if (labels.length > 20) {
+                    labels.shift();
+                    data1.shift();
+                    data2.shift();
+                }
+                chart.update();
+            }
+        }
+    </script>
+</body>
+
+</html>
