@@ -1,11 +1,14 @@
-
 #include <Arduino.h>
 
 const int maxRange = 30;
 const int minRange = 5;
 
-const int TRIG = 13;
-const int ECHO = 12;
+const int TRIG = 22; // ? 22 FORA // dentro 12
+const int ECHO = 23; // ? 23 FORA // dentro 13
+
+// Funções inline para conversão, otimizando chamadas
+inline long microSecondsToInches(long microSeconds) { return microSeconds / 74 / 2; }
+inline long microSecondsToCentimeters(long microSeconds) { return microSeconds / 29 / 2; }
 
 void setup() {
   Serial.begin(9600);
@@ -14,30 +17,31 @@ void setup() {
 }
 
 void loop() {
+  // Usa unsigned long para maior precisão
+  unsigned long duration;
 
-  long duration, inches, cm;
-
+  // Garante pulso limpo no TRIG
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG, LOW);
 
-  duration = pulseIn(ECHO, HIGH);
+  duration = pulseIn(ECHO, HIGH, 30000); // timeout para evitar travamento
 
-  inches = microSecondsToInches(duration);
-  cm = microSecondsToCentimeters(duration);
+  // Só processa se recebeu eco
+  if (duration > 0) {
+    long inches = microSecondsToInches(duration);
+    long cm = microSecondsToCentimeters(duration);
 
-  Serial.print(inches);
-  Serial.print("in, ");
-  Serial.print(cm);
-  Serial.print("cm");
-  Serial.println();
+    Serial.print(inches);
+    Serial.print("in, ");
+    Serial.print(cm);
+    Serial.print("cm");
+    Serial.println();
+  } else {
+    Serial.println("Sem resposta do sensor");
+  }
 
   delay(100);
-
 }
-
-long microSecondsToInches(long microSeconds) { return microSeconds / 74 / 2; }
-
-long microSecondsToCentimeters(long microSeconds) { return microSeconds / 29 / 2; }

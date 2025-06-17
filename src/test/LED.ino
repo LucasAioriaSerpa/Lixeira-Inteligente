@@ -1,34 +1,38 @@
-
 #include <Arduino.h>
-#include <string>
 
-const int GREEN_LED = 0;
-const int YELLOW_LED = 4;
-const int RED_LED = 16;
+const int GREEN_LED = 14;
+const int YELLOW_LED = 27;
+const int RED_LED = 26;
 
-void setup()
-{
-  Serial.begin(115200);
-  pinMode(GREEN_LED, OUTPUT);
-  pinMode(YELLOW_LED, OUTPUT);
-  pinMode(RED_LED, OUTPUT);
+struct Led {
+  int pin;
+  const char* color;
+};
+
+Led leds[] = {
+  {GREEN_LED, "Green"},
+  {YELLOW_LED, "Yellow"},
+  {RED_LED, "Red"}
+};
+
+void setup() {
+  Serial.begin(9600);
+  for (auto& led : leds) {
+    pinMode(led.pin, OUTPUT);
+  }
 }
 
-void onOffLed(int LED, String color)
-{
+void onOffLed(const Led& led) {
   Serial.print("LED -> ");
-  Serial.println(color);
-  digitalWrite(LED, HIGH);
-  delay(500);
-  digitalWrite(LED, LOW);
+  Serial.println(led.color);
+  digitalWrite(led.pin, HIGH);
+  delay(50);
+  digitalWrite(led.pin, LOW);
 }
 
-void loop()
-{
-  onOffLed(GREEN_LED, "Green");
-  delay(1000);
-  onOffLed(YELLOW_LED, "Yellow");
-  delay(1000);
-  onOffLed(RED_LED, "Red");
-  delay(1000);
+void loop() {
+  for (auto& led : leds) {
+    onOffLed(led);
+    delay(10);
+  }
 }

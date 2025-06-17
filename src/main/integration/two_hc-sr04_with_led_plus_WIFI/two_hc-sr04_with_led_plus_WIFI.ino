@@ -65,6 +65,14 @@ void handleRoot()
     String json = "{";
     json += "\"sensor1\":" + String(cm1) + ",";
     json += "\"sensor2\":" + String(cm2) + "}";
+    /*
+    {
+    "sensor1": xCm,
+    "sensor2": xCm,
+    "peso": xg / kg
+    "amonia": xppm
+    }
+    */
 
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.sendHeader("Access-Control-Allow-Methods", "GET");
