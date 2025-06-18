@@ -1,9 +1,13 @@
 {
     "files.associations": {
+        "*.embeddedhtml": "html",
+        "*.sql": "sql",
         "*.sqlbook": "sql",
         "*.ndjson": "jsonl",
         "*.dbclient-js": "javascript",
-        "*.embeddedhtml": "html",
-        "string": "cpp"
+        "string": "cpp",
+        "initializer_list": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }

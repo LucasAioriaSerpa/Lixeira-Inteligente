@@ -1,0 +1,252 @@
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Lixeira Inteligente - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0002;
+            padding: 24px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d6a4f;
+        }
+
+        .cards {
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            flex: 1;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 1px 4px #0001;
+        }
+
+        .card span {
+            display: block;
+            font-size: 2em;
+            color: #40916c;
+            margin-top: 8px;
+        }
+
+        .charts {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .chart-container {
+            flex: 1 1 350px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 4px #0001;
+        }
+
+        @media (max-width: 900px) {
+            .charts {
+                flex-direction: column;
+            }
+
+            .cards {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Lixeira Inteligente - Dashboard</h1>
+        <div class="cards">
+            <div class="card">
+                Distância Interna
+                <span id="distanciaInterna">-- cm</span>
+            </div>
+            <div class="card">
+                Distância Externa
+                <span id="distanciaExterna">-- cm</span>
+            </div>
+            <div class="card">
+                Pessoas Passaram
+                <span id="pessoasPassaram">--</span>
+            </div>
+            <div class="card">
+                Peso
+                <span id="peso">-- g</span>
+            </div>
+            <div class="card">
+                Gás Detectado
+                <span id="gasDetectado">--</span>
+            </div>
+        </div>
+        <div class="charts">
+            <div class="chart-container">
+                <canvas id="chartDistancia"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartPeso"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartGas"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Coloque o IP do seu ESP32 aqui:
+        const ESP32_IP = "192.168.15.13"; // <-- Altere para o IP do seu ESP32
+
+        // Elementos
+        const distanciaInternaEl = document.getElementById('distanciaInterna');
+        const distanciaExternaEl = document.getElementById('distanciaExterna');
+        const pessoasPassaramEl = document.getElementById('pessoasPassaram');
+        const pesoEl = document.getElementById('peso');
+        const gasDetectadoEl = document.getElementById('gasDetectado');
+
+        // Dados para os gráficos
+        const labels = [];
+        const distanciaInternaData = [];
+        const distanciaExternaData = [];
+        const pesoData = [];
+        const gasData = [];
+
+        // Gráficos
+        const chartDistancia = new Chart(document.getElementById('chartDistancia'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Distância Interna (cm)',
+                        data: distanciaInternaData,
+                        borderColor: '#40916c',
+                        backgroundColor: '#b7e4c7',
+                        fill: false,
+                        tension: 0.2
+                    },
+                    {
+                        label: 'Distância Externa (cm)',
+                        data: distanciaExternaData,
+                        borderColor: '#f77f00',
+                        backgroundColor: '#ffe5b4',
+                        fill: false,
+                        tension: 0.2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        const chartPeso = new Chart(document.getElementById('chartPeso'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Peso (g)',
+                    data: pesoData,
+                    borderColor: '#1d3557',
+                    backgroundColor: '#a8dadc',
+                    fill: false,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        const chartGas = new Chart(document.getElementById('chartGas'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Valor MQ-135',
+                    data: gasData,
+                    borderColor: '#d90429',
+                    backgroundColor: '#ffb3c1',
+                    fill: false,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Função para buscar dados do ESP32
+        async function fetchData() {
+            try {
+                const res = await fetch(`http://${ESP32_IP}/`);
+                const data = await res.json();
+
+                // Atualiza cards
+                distanciaInternaEl.textContent = data.distanciaInternaCM + " cm";
+                distanciaExternaEl.textContent = data.distanciaExternaCM + " cm";
+                pessoasPassaramEl.textContent = data.QuantidadeDePessoasQuePassaram;
+                pesoEl.textContent = data.hx711Peso + " g";
+                gasDetectadoEl.textContent = data.mqGasDetectado === "true" || data.mqGasDetectado === true ? "Sim" : "Não";
+
+                // Atualiza gráficos
+                const now = new Date();
+                const label = now.toLocaleTimeString();
+
+                if (labels.length > 20) { // Limita a 20 pontos
+                    labels.shift();
+                    distanciaInternaData.shift();
+                    distanciaExternaData.shift();
+                    pesoData.shift();
+                    gasData.shift();
+                }
+                labels.push(label);
+                distanciaInternaData.push(data.distanciaInternaCM);
+                distanciaExternaData.push(data.distanciaExternaCM);
+                pesoData.push(data.hx711Peso);
+                gasData.push(data.mqValorAnalogico);
+
+                chartDistancia.update();
+                chartPeso.update();
+                chartGas.update();
+            } catch (e) {
+                console.log("Erro ao buscar dados do ESP32:", e);
+            }
+        }
+
+        // Atualiza a cada 2 segundos
+        setInterval(fetchData, 2000);
+        fetchData();
+    </script>
+</body>
+
+</html>
