@@ -27,7 +27,7 @@
 
 //? Credenciais WiFi
 #define WIFI_SSID "Exploda"
-#define WIFI_PASSWORD "evjw7553" // TODO: insira sua senha aqui!
+#define WIFI_PASSWORD "*******" // TODO: insira sua senha aqui!
 // ! IP ESP32 -→ 192.168.15.13
 
 // ? Handles das tarefas
@@ -171,16 +171,16 @@ long contatorPessoas() {
   static long historico[numAmostras] = {0};
   static int indice = 0;
   static bool pessoaContada = false;
-  historico[indice++] = distanciaInternaCM;
+  historico[indice++] = distanciaExternaCM;
   if (indice >= numAmostras) indice = 0;
   long soma = 0;
   for (int i = 0; i < numAmostras; ++i) soma += historico[i];
   long media = soma / numAmostras;
-  if (!pessoaContada && distanciaInternaCM > media + 5) {
+  if (!pessoaContada && distanciaExternaCM > media + 5) {
     ++numPessoasQuePassaram;
     pessoaContada = true;
   }
-  if (pessoaContada && distanciaInternaCM <= media) pessoaContada = false;
+  if (pessoaContada && distanciaExternaCM <= media) pessoaContada = false;
   return numPessoasQuePassaram;
 }
 
