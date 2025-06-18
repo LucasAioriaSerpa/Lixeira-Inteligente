@@ -27,7 +27,7 @@
 
 //? Credenciais WiFi
 #define WIFI_SSID "Exploda"
-#define WIFI_PASSWORD "--------" // TODO: insira sua senha aqui!
+#define WIFI_PASSWORD "evjw7553" // TODO: insira sua senha aqui!
 // ! IP ESP32 -→ 192.168.15.13
 
 // ? Handles das tarefas
