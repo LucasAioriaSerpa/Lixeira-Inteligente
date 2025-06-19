@@ -38,16 +38,16 @@ TaskHandle_t HandleParteConexao = NULL;
 WebServer servidor(80);
 
 // ? Variáveis globais para leituras dos sensores
-long distanciaInternaCM = 0, mediaDistanciaInternaCM = 0;
+volatile long distanciaInternaCM = 0, mediaDistanciaInternaCM = 0;
 const static long maxDistanciaInternaCM = 30, minDistanciaInternaCM = 10;
 
-long distanciaExternaCM = 0, mediaDistanciaExternaCM = 0;
+volatile long distanciaExternaCM = 0, mediaDistanciaExternaCM = 0;
 const static  long maxDistanciaExternaCM = 400, minDistanciaExternaCM = 10;
 
-long numPessoasQuePassaram = 0;
-long mqValorAnalogico = 0;
-bool mqGasDetectado = false;
-long hx711Peso = 0;
+volatile long numPessoasQuePassaram = 0;
+volatile long mqValorAnalogico = 0;
+volatile bool mqGasDetectado = false;
+volatile long hx711Peso = 0;
 
 // ! DEBUG
 void debugPrint() {
