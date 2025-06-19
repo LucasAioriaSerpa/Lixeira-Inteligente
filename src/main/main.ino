@@ -17,12 +17,12 @@
 #define LED_VERDE_INTERNO_PIN 21
 
 //? Pinos do sensor MQ-135
-#define MQ_PIN_ANALOGICO 33
+#define MQ_PIN_ANALOGICO 34
 #define MQ_PIN_DIGITAL 25
 
 //? Pinos do sensor de peso HX711
-#define HX711_DT_PIN 14
-#define HX711_SCK_PIN 12
+#define HX711_DT_PIN 18
+#define HX711_SCK_PIN 19
 #define HX711_FATOR_ESCALA 2280.0f
 
 //? Credenciais WiFi
@@ -34,8 +34,9 @@
 TaskHandle_t HandleParteFisica = NULL;
 TaskHandle_t HandleParteConexao = NULL;
 
-// ? Instância do servidor web
+// ? Instâncias
 WebServer servidor(80);
+HX711 hx711;
 
 // ? Variáveis globais para leituras dos sensores
 volatile long distanciaInternaCM = 0, mediaDistanciaInternaCM = 0;
@@ -105,9 +106,10 @@ long microssegundosParaCentimetros(long microSegundos) { return microSegundos / 
  * @param alcanceMaximo O alcance máximo para a conversão.
  * @return A representação percentual do tempo em microssegundos.
  */
-long microssegundosParaPorcentagem(long microSegundos, long alcanceMaximo) {
-  if (alcanceMaximo <= 0) return 0; // ? Evita divisão por zero
-  return (microSegundos * 100) / alcanceMaximo;
+long distanciaParaPorcentagem(long distancia, long min, long max) {
+  if (distancia <= min) return 100;
+  if (distancia >= max) return 0;
+  return 100 - ((distancia - min) * 100 / (max - min));
 }
 
 /**
@@ -192,7 +194,14 @@ long contatorPessoas() {
  * a presença de gás amônia. Imprime os valores no monitor serial.
 */
 void lerAmonia() {
-  mqValorAnalogico = analogRead(MQ_PIN_ANALOGICO);
+  // ? Faz a média de 5 leituras para suavizar e reduzir impacto de analogRead
+  long soma = 0;
+  const int numLeituras = 5;
+  for (int i = 0; i < numLeituras; ++i) {
+    soma += analogRead(MQ_PIN_ANALOGICO);
+    vTaskDelay(pdMS_TO_TICKS(2));
+  }
+  mqValorAnalogico = soma / numLeituras;
   mqGasDetectado = digitalRead(MQ_PIN_DIGITAL) == HIGH; // ? Considera "HIGH" como gás detectado
 }
 
@@ -204,12 +213,11 @@ void lerAmonia() {
  * O valor é impresso no monitor serial.
 */
 void lerPesoHX711() {
-  HX711 hx711;
-  hx711.begin(HX711_DT_PIN, HX711_SCK_PIN);
-  hx711Peso = 0;
-  for (int i = 0; i < 10; i++) {hx711Peso += hx711.read();}
-  hx711Peso /= 10;
-  hx711Peso = hx711Peso / HX711_FATOR_ESCALA;
+  long soma = 0;
+  for (int i = 0; i < 10; i++) { soma += hx711.read(); }
+  float pesoMedio = static_cast<float>(soma) / 10.0f;
+  float pesoEscalado = pesoMedio / HX711_FATOR_ESCALA;
+  hx711Peso = static_cast<long>(pesoEscalado);
   hx711Peso = hx711Peso < 0 ? 0 : hx711Peso;
 }
 
@@ -348,10 +356,10 @@ void setup() {
   digitalWrite(LED_VERDE_INTERNO_PIN, HIGH);
   delay(100);
   digitalWrite(LED_VERDE_INTERNO_PIN, LOW);
-  pinMode(MQ_PIN_ANALOGICO, INPUT);
-  pinMode(MQ_PIN_DIGITAL, INPUT);
   pinMode(HX711_DT_PIN, INPUT);
   pinMode(HX711_SCK_PIN, OUTPUT);
+  // ? Inicialização do HX711
+  hx711.begin(HX711_DT_PIN, HX711_SCK_PIN);
   // ? Configuração do Conexão Wifi
   setupWifi();
   // ? xTaskCreate startando as tarefas:
