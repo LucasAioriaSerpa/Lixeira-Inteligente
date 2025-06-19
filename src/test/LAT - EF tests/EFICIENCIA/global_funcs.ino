@@ -64,6 +64,23 @@ void testarEficienciaMQ135()
     }
 }
 
+/**
+* @brief Mede a eficiência do sensor HX711 (leituras por segundo).
+*/
+void testarEficienciaHX711()
+{
+    static int leituras = 0;
+    static unsigned long t0 = millis();
+    lerPesoHX711();
+    leituras++;
+    if (millis() - t0 > 1000)
+    {
+        Serial.print("Leituras HX711/s: ");
+        Serial.println(leituras);
+        leituras = 0;
+        t0 = millis();
+    }
+}
 
 /**
  * @brief Mede a eficiência do servidor HTTP (requisições por segundo).
