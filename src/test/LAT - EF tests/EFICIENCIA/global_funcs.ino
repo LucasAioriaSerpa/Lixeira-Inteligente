@@ -47,6 +47,25 @@ void testarEficienciaHCSR04Externo()
 }
 
 /**
+* @brief Mede a eficiência do sensor MQ-135 (leituras por segundo).
+*/
+void testarEficienciaMQ135()
+{
+    static int leituras = 0;
+    static unsigned long t0 = millis();
+    lerAmonia();
+    leituras++;
+    if (millis() - t0 > 1000)
+    {
+        Serial.print("Leituras MQ-135/s: ");
+        Serial.println(leituras);
+        leituras = 0;
+        t0 = millis();
+    }
+}
+
+
+/**
  * @brief Mede a eficiência do servidor HTTP (requisições por segundo).
  *        Chame em handleRoot().
  */
