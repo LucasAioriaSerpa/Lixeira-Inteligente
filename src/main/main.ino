@@ -26,7 +26,7 @@
 #define HX711_FATOR_ESCALA 2280.0f
 
 //? Credenciais WiFi
-#define WIFI_SSID "Exploda"
+#define WIFI_SSID "nomeWiFiInsiraAqui"
 #define WIFI_PASSWORD "*******" // TODO: insira sua senha aqui!
 // ! IP ESP32 -→ 192.168.15.13
 
@@ -40,11 +40,7 @@ HX711 hx711;
 
 // ? Variáveis globais para leituras dos sensores
 volatile long distanciaInternaCM = 0, mediaDistanciaInternaCM = 0;
-const static long maxDistanciaInternaCM = 30, minDistanciaInternaCM = 10;
-
 volatile long distanciaExternaCM = 0, mediaDistanciaExternaCM = 0;
-const static  long maxDistanciaExternaCM = 400, minDistanciaExternaCM = 10;
-
 volatile long numPessoasQuePassaram = 0;
 volatile long mqValorAnalogico = 0;
 volatile bool mqGasDetectado = false;
@@ -233,7 +229,6 @@ void lerPesoHX711() {
 */
 void ParteFisica(void *pvParameters) {
   for (;;) {
-    Serial.println("Tarefa Parte Física rodando!");
     // ? Leitura dos sensores de distância
     distanciaExternaCM = lerDistanciaMediaCM(TRIG_EXTERNO_PIN, ECHO_EXTERNO_PIN, 5, 5);
     mediaDistanciaExternaCM = (mediaDistanciaExternaCM + distanciaExternaCM) / 2;
@@ -245,13 +240,10 @@ void ParteFisica(void *pvParameters) {
     digitalWrite(LED_AMARELO_INTERNO_PIN, LOW);
     digitalWrite(LED_VERMELHO_INTERNO_PIN, LOW);
     if (mediaDistanciaInternaCM >= 30 && mediaDistanciaInternaCM <= 40) {
-      Serial.println("Lixeira vazia");
       digitalWrite(LED_VERMELHO_INTERNO_PIN, HIGH);
     } else if (mediaDistanciaInternaCM >= 11 && mediaDistanciaInternaCM < 30) {
-      Serial.println("Lixeira meio termo");
       digitalWrite(LED_AMARELO_INTERNO_PIN, HIGH);
     } else if (mediaDistanciaInternaCM <= 10 && mediaDistanciaInternaCM >= 5) {
-      Serial.println("Lixeira cheia");
       digitalWrite(LED_VERDE_INTERNO_PIN, HIGH);
     }
     // ? Verificação de pessoas passando
@@ -307,7 +299,6 @@ void handleRoot() {
 */
 void setupWifi() {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Conectando-se ao WiFi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -345,17 +336,8 @@ void setup() {
   pinMode(TRIG_EXTERNO_PIN, OUTPUT);
   pinMode(ECHO_EXTERNO_PIN, INPUT);
   pinMode(LED_VERMELHO_INTERNO_PIN, OUTPUT);
-  digitalWrite(LED_VERMELHO_INTERNO_PIN, HIGH);
-  delay(100);
-  digitalWrite(LED_VERMELHO_INTERNO_PIN, LOW);
   pinMode(LED_AMARELO_INTERNO_PIN, OUTPUT);
-  digitalWrite(LED_AMARELO_INTERNO_PIN, HIGH);
-  delay(100);
-  digitalWrite(LED_AMARELO_INTERNO_PIN, LOW);
   pinMode(LED_VERDE_INTERNO_PIN, OUTPUT);
-  digitalWrite(LED_VERDE_INTERNO_PIN, HIGH);
-  delay(100);
-  digitalWrite(LED_VERDE_INTERNO_PIN, LOW);
   pinMode(HX711_DT_PIN, INPUT);
   pinMode(HX711_SCK_PIN, OUTPUT);
   // ? Inicialização do HX711
