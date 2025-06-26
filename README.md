@@ -20,13 +20,14 @@
 ### Controlador de verção e Editores
 
 - [![GITHUB][GITHUB]][GITHUB-url] [![GIT][GIT]][GIT-url]
+- [![ARDUINO][ARDUINO]][ARDUINO-url]
 - [![VISUAL STUDIO CODE][VS]][VS-url]
 
 ---
 
 ### Tecnologias Utilizadas
 
-- [![ARDUINO][ARDUINO]][ARDUINO-url]
+- [![C][C]][C-url] [![C++][C++]][C++-url]
 
 ---
 
@@ -67,6 +68,10 @@
 [GIT-url]: https://git-scm.com/doc
 [VS]: https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white
 [VS-url]: https://code.visualstudio.com
-
 [ARDUINO]: https://img.shields.io/badge/-Arduino-00979D?style=for-the-badge&logo=Arduino&logoColor=white
 [ARDUINO-url]: https://www.arduino.cc
+
+[C]: https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white
+[C-url]: https://www.learn-c.org
+[C++]: https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white
+[C++-url]: https://www.learn-cpp.org
