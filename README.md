@@ -1,5 +1,5 @@
 
-# Lixeira-Inteligente
+# Lixeira Inteligente
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
@@ -7,15 +7,15 @@
 [![Issues][issues-shield]][issues-url]
 [![Unlicense License][license-shield]][license-url]
 
-![Logo do projeto](doc/readme/img.png)
+![Logo do projeto](doc/readme/LIXEIRA-INTELIGENTE-LOGO.png)
 
-**aaaa**
+**Lixeira Inteligente é um sistema embarcado baseado em ESP32 para monitoramento automatizado de resíduos.**
 
 ---
 
 ## Sobre o Projeto
 
-...
+O projeto realiza medições de nível de lixo, peso e qualidade do ar, além de contar o fluxo de pessoas próximas, disponibilizando todas as informações em tempo real via API REST para integração
 
 ### Controlador de verção e Editores
 
