@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
 const int GREEN_LED = 14;
-const int YELLOW_LED = 27;
-const int RED_LED = 26;
+const int YELLOW_LED = 26;
+const int RED_LED = 21;
 
 struct Led {
   int pin;

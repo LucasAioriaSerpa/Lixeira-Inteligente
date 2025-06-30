@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "HX711.h"
 
-constexpr int DT_PIN = 14;
-constexpr int SCK_PIN = 12;
+constexpr int DT_PIN = 19;
+constexpr int SCK_PIN = 18;
 constexpr float SCALE_FACTOR = 2280.0f;
 
 HX711 scale;

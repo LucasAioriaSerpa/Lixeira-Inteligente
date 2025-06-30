@@ -12,27 +12,27 @@
 #define ECHO_EXTERNO_PIN 23
 
 //? Pinos dos LEDs
-#define LED_VERMELHO_INTERNO_PIN 14
+#define LED_VERMELHO_INTERNO_PIN 21
 #define LED_AMARELO_INTERNO_PIN 26
-#define LED_VERDE_INTERNO_PIN 21
+#define LED_VERDE_INTERNO_PIN 14
 
 //? Pinos do sensor MQ-135
 #define MQ_PIN_ANALOGICO 34
 #define MQ_PIN_DIGITAL 25
 
 //? Pinos do sensor de peso HX711
-#define HX711_DT_PIN 18
-#define HX711_SCK_PIN 19
+#define HX711_DT_PIN 19
+#define HX711_SCK_PIN 18
 #define HX711_FATOR_ESCALA 2280.0f
 
 //? Credenciais WiFi
-#define WIFI_SSID "nomeWiFiInsiraAqui"
-#define WIFI_PASSWORD "*******" // TODO: insira sua senha aqui!
+#define WIFI_SSID "VIVOFIBRA-0286"
+#define WIFI_PASSWORD "33d73b0286" // TODO: insira sua senha aqui!
 // ! IP ESP32 -→ 192.168.15.13
 
 // ? Handles das tarefas
-TaskHandle_t HandleParteFisica = NULL;
-TaskHandle_t HandleParteConexao = NULL;
+TaskHandle_t HandleParteFisica;
+TaskHandle_t HandleParteConexao;
 
 // ? Instâncias
 WebServer servidor(80);
@@ -54,17 +54,14 @@ void debugPrint() {
   Serial.print(mediaDistanciaInternaCM);
   Serial.print(" cm, Pessoas Passaram: ");
   Serial.println(numPessoasQuePassaram);
-
   Serial.print("Distancia Externa: ");
   Serial.print(distanciaExternaCM);
   Serial.print(" cm, Média: ");
   Serial.println(mediaDistanciaExternaCM);
-
   Serial.print("MQ-135 Valor Analógico: ");
   Serial.println(mqValorAnalogico);
   Serial.print("MQ-135 Gás Detectado: ");
   Serial.println(mqGasDetectado ? "Sim" : "Não");
-
   Serial.print("HX711 Peso: ");
   Serial.print(hx711Peso);
   Serial.println(" g");
@@ -150,9 +147,24 @@ long lerDistanciaMediaCM(int trigPin, int echoPin, int trigDelay, int numAmostra
       soma += d;
       leiturasValidas++;
     }
-    vTaskDelay(5); // ? Delay reduzido para resposta mais rápida
   }
   return (leiturasValidas > 0) ? soma / leiturasValidas : 0;
+}
+
+/**
+ * @brief Controla os leds externos
+ */
+void controladorDeLeds() {
+  digitalWrite(LED_VERDE_INTERNO_PIN, LOW);
+  digitalWrite(LED_AMARELO_INTERNO_PIN, LOW);
+  digitalWrite(LED_VERMELHO_INTERNO_PIN, LOW);
+  if (mediaDistanciaInternaCM >= 10 ) {
+    digitalWrite(LED_VERDE_INTERNO_PIN, HIGH);
+  } else if (mediaDistanciaInternaCM >= 5 && mediaDistanciaInternaCM < 10){
+    digitalWrite(LED_AMARELO_INTERNO_PIN, HIGH);
+  } else {
+    digitalWrite(LED_VERMELHO_INTERNO_PIN, HIGH);
+  }
 }
 
 /**
@@ -217,44 +229,6 @@ void lerPesoHX711() {
   hx711Peso = hx711Peso < 0 ? 0 : hx711Peso;
 }
 
-// ? TASK
-/**
- * @brief Função de tarefa que gerencia a parte física do sistema.
- *
- * Esta função deve ser executada como uma tarefa FreeRTOS. Ela executa continuamente
- * em um loop infinito, imprimindo "Tarefa Parte Física rodando!" no monitor serial a cada segundo.
- * O atraso entre as impressões é feito usando vTaskDelay.
- *
- * @param pvParameters Ponteiro para os parâmetros passados para a tarefa (não utilizado).
-*/
-void ParteFisica(void *pvParameters) {
-  for (;;) {
-    // ? Leitura dos sensores de distância
-    distanciaExternaCM = lerDistanciaMediaCM(TRIG_EXTERNO_PIN, ECHO_EXTERNO_PIN, 5, 5);
-    mediaDistanciaExternaCM = (mediaDistanciaExternaCM + distanciaExternaCM) / 2;
-    vTaskDelay(pdMS_TO_TICKS(10)); // ? Delay para evitar leituras muito rápidas
-    distanciaInternaCM = lerDistanciaMediaCM(TRIG_INTERNO_PIN, ECHO_INTERNO_PIN, 10, 5);
-    mediaDistanciaInternaCM = (mediaDistanciaInternaCM + distanciaInternaCM) / 2;
-    // ? Controle dos LEDs
-    digitalWrite(LED_VERDE_INTERNO_PIN, LOW);
-    digitalWrite(LED_AMARELO_INTERNO_PIN, LOW);
-    digitalWrite(LED_VERMELHO_INTERNO_PIN, LOW);
-    if (mediaDistanciaInternaCM >= 30 && mediaDistanciaInternaCM <= 40) {
-      digitalWrite(LED_VERMELHO_INTERNO_PIN, HIGH);
-    } else if (mediaDistanciaInternaCM >= 11 && mediaDistanciaInternaCM < 30) {
-      digitalWrite(LED_AMARELO_INTERNO_PIN, HIGH);
-    } else if (mediaDistanciaInternaCM <= 10 && mediaDistanciaInternaCM >= 5) {
-      digitalWrite(LED_VERDE_INTERNO_PIN, HIGH);
-    }
-    // ? Verificação de pessoas passando
-    contatorPessoas();
-    // ? Leitura do sensor MQ-135
-    lerAmonia();
-    // ? Leitura do sensor de peso HX711
-    lerPesoHX711();
-  }
-}
-
 // ! PARTE CONEXÃO
 
 /**
@@ -277,7 +251,7 @@ void handleRoot() {
   */
   String json = "{";
   json += "\"distanciaInternaCM\":" + String(mediaDistanciaInternaCM) + ",";
-  json += "\"porcentagemInterna\":" + String(microssegundosParaPorcentagem(mediaDistanciaInternaCM, maxDistanciaInternaCM)) + ",";
+  json += "\"porcentagemInterna\":" + String(distanciaParaPorcentagem(mediaDistanciaInternaCM, 5, 30)) + ",";
   json += "\"distanciaExternaCM\":" + String(mediaDistanciaExternaCM) + ",";
   json += "\"QuantidadeDePessoasQuePassaram\":" + String(numPessoasQuePassaram) + ",";
   json += "\"mqValorAnalogico\":" + String(mqValorAnalogico) + ",";
@@ -308,28 +282,8 @@ void setupWifi() {
   Serial.println(WiFi.localIP());
 }
 
-// ? TASK
-/**
- * @brief Função de tarefa que gerencia a parte de conexão do sistema.
- *
- * Esta função deve ser executada como uma tarefa FreeRTOS. Ela configura o servidor web,
- * define as rotas e aguarda requisições do cliente em um loop infinito.
- *
- * @param pvParameters Ponteiro para os parâmetros passados para a tarefa (não utilizado).
-*/
-void ParteConexao(void *pvParameters) {
-  // ? Configuração do servidor web
-  servidor.on("/", HTTP_GET, handleRoot);     // ? Rota root
-  servidor.begin();                           // ? Inicia o servidor web
-  Serial.println("Servidor web iniciado!");
-  for (;;) {
-    servidor.handleClient();                  // ? Aguarda requisições do client
-    vTaskDelay(pdMS_TO_TICKS(10));            // ? Pequeno delay para evitar uso excessivo da CPU :]
-  }
-}
-
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   // ? Configuração dos pinos
   pinMode(TRIG_INTERNO_PIN, OUTPUT);
   pinMode(ECHO_INTERNO_PIN, INPUT);
@@ -344,23 +298,86 @@ void setup() {
   hx711.begin(HX711_DT_PIN, HX711_SCK_PIN);
   // ? Configuração do Conexão Wifi
   setupWifi();
-  // ? xTaskCreate startando as tarefas:
-  xTaskCreate(
+  // ? xTaskCreatePinnedToCore startando as tarefas:
+  xTaskCreatePinnedToCore(
     ParteFisica,            // ? Função da tarefa
     "ParteFisica",          // ? Nome
     2048,                   // ? Tamanho da pilha (ESP32 precisa de mais, ex: 2048 bytes)
     NULL,                   // ? Parâmetros
     1,                      // ? Prioridade
-    &HandleParteFisica      // ? Handle da tarefa
+    &HandleParteFisica,     // ? Handle da tarefa
+    0                       // ? Core ID
   );
-  xTaskCreate(
+  delay(500);
+  xTaskCreatePinnedToCore(
     ParteConexao,
     "ParteConexao",
     4096,
     NULL,
     1,
-    &HandleParteConexao
+    &HandleParteConexao,
+    1
   );
+  delay(500);
+}
+
+// ? TASK
+/**
+ * @brief Função de tarefa que gerencia a parte física do sistema.
+ *
+ * Esta função deve ser executada como uma tarefa FreeRTOS. Ela executa continuamente
+ * em um loop infinito, imprimindo "Tarefa Parte Física rodando!" no monitor serial a cada segundo.
+ * O atraso entre as impressões é feito usando vTaskDelay.
+ *
+ * @param pvParameters Ponteiro para os parâmetros passados para a tarefa (não utilizado).
+*/
+void ParteFisica(void *pvParameters) {
+  Serial.print("TASK: ParteFisica | CORE: ");
+  Serial.println(xPortGetCoreID());
+  int ciclo = 0;
+  for (;;) {
+    // ? Leitura dos sensores de distância
+    distanciaExternaCM = lerDistanciaMediaCM(TRIG_EXTERNO_PIN, ECHO_EXTERNO_PIN, 5, 5);
+    mediaDistanciaExternaCM = (mediaDistanciaExternaCM + distanciaExternaCM) / 2;
+    vTaskDelay(pdMS_TO_TICKS(5)); // ? Delay para evitar leituras muito rápidas
+    distanciaInternaCM = lerDistanciaMediaCM(TRIG_INTERNO_PIN, ECHO_INTERNO_PIN, 10, 5);
+    mediaDistanciaInternaCM = (mediaDistanciaInternaCM + distanciaInternaCM) / 2;
+    // ? Controle dos LEDs
+    controladorDeLeds();
+    // ? Verificação de pessoas passando
+    contatorPessoas();
+    // ? Leitura do sensor MQ-135
+    if (ciclo % 2 == 0) lerAmonia();
+    // ? Leitura do sensor de peso HX711
+    if (ciclo % 10 == 0) lerPesoHX711();
+    // ? ciclo loop
+    ciclo++;
+    if (ciclo > 1000) ciclo = 0;
+    // ? Pequeno delay
+    vTaskDelay(pdMS_TO_TICKS(20));
+  }
+}
+
+// ? TASK
+/**
+ * @brief Função de tarefa que gerencia a parte de conexão do sistema.
+ *
+ * Esta função deve ser executada como uma tarefa FreeRTOS. Ela configura o servidor web,
+ * define as rotas e aguarda requisições do cliente em um loop infinito.
+ *
+ * @param pvParameters Ponteiro para os parâmetros passados para a tarefa (não utilizado).
+*/
+void ParteConexao(void *pvParameters) {
+  Serial.print("TASK: ParteConexao | CORE: ");
+  Serial.println(xPortGetCoreID());
+  // ? Configuração do servidor web
+  servidor.on("/", HTTP_GET, handleRoot);     // ? Rota root
+  servidor.begin();                           // ? Inicia o servidor web
+  Serial.println("Servidor web iniciado!");
+  for (;;) {
+    servidor.handleClient();                  // ? Aguarda requisições do client
+    vTaskDelay(pdMS_TO_TICKS(10));            // ? Pequeno delay para evitar uso excessivo da CPU :]
+  }
 }
 
 void loop(){}
