@@ -7,7 +7,13 @@
 [![Issues][issues-shield]][issues-url]
 [![Unlicense License][license-shield]][license-url]
 
-![Logo do projeto](doc/readme/LIXEIRA-INTELIGENTE-LOGO.png)
+<img
+    src="doc/readme/LIXEIRA-INTELIGENTE-LOGO.png"
+    alt="Logo da lixeira"
+    style="
+        Display:block;
+        margin:auto;"
+/>
 
 **Lixeira Inteligente é um sistema embarcado baseado em ESP32 para monitoramento automatizado de resíduos.**
 
