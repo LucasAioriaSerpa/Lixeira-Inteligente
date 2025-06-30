@@ -26,8 +26,8 @@
 #define HX711_FATOR_ESCALA 2280.0f
 
 //? Credenciais WiFi
-#define WIFI_SSID "VIVOFIBRA-0286"
-#define WIFI_PASSWORD "33d73b0286" // TODO: insira sua senha aqui!
+#define WIFI_SSID "-------"
+#define WIFI_PASSWORD "******" // TODO: insira sua senha aqui!
 // ! IP ESP32 -→ 192.168.15.13
 
 // ? Handles das tarefas
